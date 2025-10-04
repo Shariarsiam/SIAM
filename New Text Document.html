@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zawad's Dashboard</title>
+  <style>
+    body {
+       margin: 0;
+      font-family: Arial, sans-serif;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-color: #000;
+      transition: background-image 0.5s;
+      color: white;
+      padding: 0;
+    }
+    h1 {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 32px;
+    }
+    .search-container {
+      text-align: right;
+      margin-top: 10px;
+    }
+    .search-container input {
+      width: 60%;
+      max-width: 500px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 30px;
+      border: none;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+    }
+    .tile {
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 12px;
+      text-align: center;
+      padding: 10px;
+      transition: 0.2s;
+      position: relative;
+    }
+    .tile:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+    .tile img {
+      width: 32px;
+      height: 32px;
+      margin-bottom: 6px;
+    }
+    .tile a {
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
+    }
+    .actions {
+      margin-top: 5px;
+    }
+    .actions button {
+      background: transparent;
+      border: none;
+      color: #ddd;
+      font-size: 10px;
+      margin: 0 2px;
+      cursor: pointer;
+    }
+    .plus-tile {
+      font-size: 28px;
+      color: #aaa;
+      cursor: pointer;
+      padding-top: 25px;
+    }
+    #bg-btn {
+      position: fixed;
+      bottom: 15px;
+      right: 15px;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+    #bg-input {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>SIAM</h1>
+  <div class="search-container">
+    <form onsubmit="searchGoogle(event)">
+      <input type="text" id="search" placeholder="Search Google..." />
+    </form>
+  </div>
+
+  <div class="grid" id="shortcutGrid">
+    <!-- Shortcuts will appear here -->
+  </div>
+
+  <button id="bg-btn" onclick="document.getElementById('bg-input').click()">🖼</button>
+  <input type="file" id="bg-input" accept="image/*" onchange="changeBackground(this)" />
+
+  <script>
+    const grid = document.getElementById("shortcutGrid");
+
+    let shortcuts = JSON.parse(localStorage.getItem("shortcuts")) || [
+      { name: "YouTube", url: "https://youtube.com" },
+      { name: "ChatGPT", url: "https://chat.openai.com" },
+      { name: "GitHub", url: "https://github.com" },
+      { name: "Coursera", url: "https://coursera.org" },
+      { name: "Gmail", url: "https://mail.google.com" },
+    ];
+
+    function getFavicon(url) {
+      try {
+        const domain = new URL(url).hostname;
+        return https://www.google.com/s2/favicons?domain=${domain};
+      } catch {
+        return "";
+      }
+    }
+
+    function renderShortcuts() {
+      grid.innerHTML = "";
+      shortcuts.forEach((sc, i) => {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.innerHTML = `
+          <a href="${sc.url}" target="_self">
+            <img src="${getFavicon(sc.url)}" alt="favicon" />
+            <div>${sc.name}</div>
+          </a>
+          <div class="actions">
+            <button onclick="editShortcut(${i})">✏</button>
+            <button onclick="deleteShortcut(${i})">🗑</button>
+          </div>
+        `;
+        grid.appendChild(tile);
+      });
+
+      const addTile = document.createElement("div");
+      addTile.className = "tile plus-tile";
+      addTile.innerHTML = "+";
+      addTile.onclick = addShortcut;
+      grid.appendChild(addTile);
+    }
+
+    function addShortcut() {
+      const name = prompt("Shortcut name:");
+      const url = prompt("Shortcut URL (include https://):");
+      if (name && url) {
+        shortcuts.push({ name, url });
+        saveShortcuts();
+      }
+    }
+
+    function editShortcut(index) {
+      const name = prompt("Edit name:", shortcuts[index].name);
+      const url = prompt("Edit URL:", shortcuts[index].url);
+      if (name && url) {
+        shortcuts[index] = { name, url };
+        saveShortcuts();
+      }
+    }
+
+    function deleteShortcut(index) {
+      if (confirm("Delete this shortcut?")) {
+        shortcuts.splice(index, 1);
+        saveShortcuts();
+      }
+    }
+
+    function saveShortcuts() {
+      localStorage.setItem("shortcuts", JSON.stringify(shortcuts));
+      renderShortcuts();
+    }
+
+    function changeBackground(input) {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.body.style.backgroundImage = url('${reader.result}');
+          localStorage.setItem("background", reader.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function searchGoogle(event) {
+      event.preventDefault();
+      const query = document.getElementById("search").value.trim();
+      if (query) {
+        window.location.href = https://www.google.com/search?q=${encodeURIComponent(query)};
+      }
+    }
+
+    // Load background from storage
+    const savedBg = localStorage.getItem("background");
+    if (savedBg) {
+      document.body.style.backgroundImage = url('${savedBg}');
+    }
+
+    renderShortcuts();
+  </script>
+</body>
+</html>
